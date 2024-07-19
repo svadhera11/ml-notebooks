@@ -1,0 +1,921 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "09991479",
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:29.373184Z",
+     "iopub.status.busy": "2024-07-19T07:45:29.372689Z",
+     "iopub.status.idle": "2024-07-19T07:45:30.409348Z",
+     "shell.execute_reply": "2024-07-19T07:45:30.407802Z"
+    },
+    "papermill": {
+     "duration": 1.046983,
+     "end_time": "2024-07-19T07:45:30.412071",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:29.365088",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "/kaggle/input/playground-series-s4e6/sample_submission.csv\n",
+      "/kaggle/input/playground-series-s4e6/train.csv\n",
+      "/kaggle/input/playground-series-s4e6/test.csv\n"
+     ]
+    }
+   ],
+   "source": [
+    "# This Python 3 environment comes with many helpful analytics libraries installed\n",
+    "# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python\n",
+    "# For example, here's several helpful packages to load\n",
+    "\n",
+    "import numpy as np # linear algebra\n",
+    "import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)\n",
+    "\n",
+    "# Input data files are available in the read-only \"../input/\" directory\n",
+    "# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory\n",
+    "\n",
+    "import os\n",
+    "for dirname, _, filenames in os.walk('/kaggle/input'):\n",
+    "    for filename in filenames:\n",
+    "        print(os.path.join(dirname, filename))\n",
+    "\n",
+    "# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using \"Save & Run All\" \n",
+    "# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "67eced9d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:30.425085Z",
+     "iopub.status.busy": "2024-07-19T07:45:30.424533Z",
+     "iopub.status.idle": "2024-07-19T07:45:31.113761Z",
+     "shell.execute_reply": "2024-07-19T07:45:31.112373Z"
+    },
+    "papermill": {
+     "duration": 0.699031,
+     "end_time": "2024-07-19T07:45:31.116726",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:30.417695",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "train = pd.read_csv('/kaggle/input/playground-series-s4e6/train.csv')\n",
+    "test = pd.read_csv('/kaggle/input/playground-series-s4e6/test.csv')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "2f2c5566",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:31.129356Z",
+     "iopub.status.busy": "2024-07-19T07:45:31.128919Z",
+     "iopub.status.idle": "2024-07-19T07:45:31.188649Z",
+     "shell.execute_reply": "2024-07-19T07:45:31.186374Z"
+    },
+    "papermill": {
+     "duration": 0.070288,
+     "end_time": "2024-07-19T07:45:31.192445",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:31.122157",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Marital status</th>\n",
+       "      <th>Application mode</th>\n",
+       "      <th>Application order</th>\n",
+       "      <th>Course</th>\n",
+       "      <th>Daytime/evening attendance</th>\n",
+       "      <th>Previous qualification</th>\n",
+       "      <th>Previous qualification (grade)</th>\n",
+       "      <th>Nacionality</th>\n",
+       "      <th>Mother's qualification</th>\n",
+       "      <th>...</th>\n",
+       "      <th>Curricular units 2nd sem (credited)</th>\n",
+       "      <th>Curricular units 2nd sem (enrolled)</th>\n",
+       "      <th>Curricular units 2nd sem (evaluations)</th>\n",
+       "      <th>Curricular units 2nd sem (approved)</th>\n",
+       "      <th>Curricular units 2nd sem (grade)</th>\n",
+       "      <th>Curricular units 2nd sem (without evaluations)</th>\n",
+       "      <th>Unemployment rate</th>\n",
+       "      <th>Inflation rate</th>\n",
+       "      <th>GDP</th>\n",
+       "      <th>Target</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9238</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>126.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>7</td>\n",
+       "      <td>6</td>\n",
+       "      <td>12.428571</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11.1</td>\n",
+       "      <td>0.6</td>\n",
+       "      <td>2.02</td>\n",
+       "      <td>Graduate</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>17</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9238</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>125.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>9</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11.1</td>\n",
+       "      <td>0.6</td>\n",
+       "      <td>2.02</td>\n",
+       "      <td>Dropout</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>17</td>\n",
+       "      <td>2</td>\n",
+       "      <td>9254</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>137.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>16.2</td>\n",
+       "      <td>0.3</td>\n",
+       "      <td>-0.92</td>\n",
+       "      <td>Dropout</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>9500</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>131.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8</td>\n",
+       "      <td>11</td>\n",
+       "      <td>7</td>\n",
+       "      <td>12.820000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11.1</td>\n",
+       "      <td>0.6</td>\n",
+       "      <td>2.02</td>\n",
+       "      <td>Enrolled</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>9500</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>132.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>12</td>\n",
+       "      <td>6</td>\n",
+       "      <td>12.933333</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7.6</td>\n",
+       "      <td>2.6</td>\n",
+       "      <td>0.32</td>\n",
+       "      <td>Graduate</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 38 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   id  Marital status  Application mode  Application order  Course  \\\n",
+       "0   0               1                 1                  1    9238   \n",
+       "1   1               1                17                  1    9238   \n",
+       "2   2               1                17                  2    9254   \n",
+       "3   3               1                 1                  3    9500   \n",
+       "4   4               1                 1                  2    9500   \n",
+       "\n",
+       "   Daytime/evening attendance  Previous qualification  \\\n",
+       "0                           1                       1   \n",
+       "1                           1                       1   \n",
+       "2                           1                       1   \n",
+       "3                           1                       1   \n",
+       "4                           1                       1   \n",
+       "\n",
+       "   Previous qualification (grade)  Nacionality  Mother's qualification  ...  \\\n",
+       "0                           126.0            1                       1  ...   \n",
+       "1                           125.0            1                      19  ...   \n",
+       "2                           137.0            1                       3  ...   \n",
+       "3                           131.0            1                      19  ...   \n",
+       "4                           132.0            1                      19  ...   \n",
+       "\n",
+       "   Curricular units 2nd sem (credited)  Curricular units 2nd sem (enrolled)  \\\n",
+       "0                                    0                                    6   \n",
+       "1                                    0                                    6   \n",
+       "2                                    0                                    6   \n",
+       "3                                    0                                    8   \n",
+       "4                                    0                                    7   \n",
+       "\n",
+       "   Curricular units 2nd sem (evaluations)  \\\n",
+       "0                                       7   \n",
+       "1                                       9   \n",
+       "2                                       0   \n",
+       "3                                      11   \n",
+       "4                                      12   \n",
+       "\n",
+       "   Curricular units 2nd sem (approved)  Curricular units 2nd sem (grade)  \\\n",
+       "0                                    6                         12.428571   \n",
+       "1                                    0                          0.000000   \n",
+       "2                                    0                          0.000000   \n",
+       "3                                    7                         12.820000   \n",
+       "4                                    6                         12.933333   \n",
+       "\n",
+       "   Curricular units 2nd sem (without evaluations)  Unemployment rate  \\\n",
+       "0                                               0               11.1   \n",
+       "1                                               0               11.1   \n",
+       "2                                               0               16.2   \n",
+       "3                                               0               11.1   \n",
+       "4                                               0                7.6   \n",
+       "\n",
+       "   Inflation rate   GDP    Target  \n",
+       "0             0.6  2.02  Graduate  \n",
+       "1             0.6  2.02   Dropout  \n",
+       "2             0.3 -0.92   Dropout  \n",
+       "3             0.6  2.02  Enrolled  \n",
+       "4             2.6  0.32  Graduate  \n",
+       "\n",
+       "[5 rows x 38 columns]"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "f2f3b1a4",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:31.207921Z",
+     "iopub.status.busy": "2024-07-19T07:45:31.207549Z",
+     "iopub.status.idle": "2024-07-19T07:45:31.224907Z",
+     "shell.execute_reply": "2024-07-19T07:45:31.223814Z"
+    },
+    "papermill": {
+     "duration": 0.027698,
+     "end_time": "2024-07-19T07:45:31.227918",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:31.200220",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "X_train = train[list(train.columns)[:-1]]\n",
+    "y_train = train['Target']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "366b06c1",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:31.243011Z",
+     "iopub.status.busy": "2024-07-19T07:45:31.241848Z",
+     "iopub.status.idle": "2024-07-19T07:45:31.272624Z",
+     "shell.execute_reply": "2024-07-19T07:45:31.271282Z"
+    },
+    "papermill": {
+     "duration": 0.041451,
+     "end_time": "2024-07-19T07:45:31.275462",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:31.234011",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>Marital status</th>\n",
+       "      <th>Application mode</th>\n",
+       "      <th>Application order</th>\n",
+       "      <th>Course</th>\n",
+       "      <th>Daytime/evening attendance</th>\n",
+       "      <th>Previous qualification</th>\n",
+       "      <th>Previous qualification (grade)</th>\n",
+       "      <th>Nacionality</th>\n",
+       "      <th>Mother's qualification</th>\n",
+       "      <th>...</th>\n",
+       "      <th>Curricular units 1st sem (without evaluations)</th>\n",
+       "      <th>Curricular units 2nd sem (credited)</th>\n",
+       "      <th>Curricular units 2nd sem (enrolled)</th>\n",
+       "      <th>Curricular units 2nd sem (evaluations)</th>\n",
+       "      <th>Curricular units 2nd sem (approved)</th>\n",
+       "      <th>Curricular units 2nd sem (grade)</th>\n",
+       "      <th>Curricular units 2nd sem (without evaluations)</th>\n",
+       "      <th>Unemployment rate</th>\n",
+       "      <th>Inflation rate</th>\n",
+       "      <th>GDP</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9238</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>126.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>7</td>\n",
+       "      <td>6</td>\n",
+       "      <td>12.428571</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11.1</td>\n",
+       "      <td>0.6</td>\n",
+       "      <td>2.02</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>17</td>\n",
+       "      <td>1</td>\n",
+       "      <td>9238</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>125.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>9</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11.1</td>\n",
+       "      <td>0.6</td>\n",
+       "      <td>2.02</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2</td>\n",
+       "      <td>1</td>\n",
+       "      <td>17</td>\n",
+       "      <td>2</td>\n",
+       "      <td>9254</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>137.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>6</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0.000000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>16.2</td>\n",
+       "      <td>0.3</td>\n",
+       "      <td>-0.92</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>3</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>3</td>\n",
+       "      <td>9500</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>131.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>8</td>\n",
+       "      <td>11</td>\n",
+       "      <td>7</td>\n",
+       "      <td>12.820000</td>\n",
+       "      <td>0</td>\n",
+       "      <td>11.1</td>\n",
+       "      <td>0.6</td>\n",
+       "      <td>2.02</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>4</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>2</td>\n",
+       "      <td>9500</td>\n",
+       "      <td>1</td>\n",
+       "      <td>1</td>\n",
+       "      <td>132.0</td>\n",
+       "      <td>1</td>\n",
+       "      <td>19</td>\n",
+       "      <td>...</td>\n",
+       "      <td>0</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7</td>\n",
+       "      <td>12</td>\n",
+       "      <td>6</td>\n",
+       "      <td>12.933333</td>\n",
+       "      <td>0</td>\n",
+       "      <td>7.6</td>\n",
+       "      <td>2.6</td>\n",
+       "      <td>0.32</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "<p>5 rows × 37 columns</p>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   id  Marital status  Application mode  Application order  Course  \\\n",
+       "0   0               1                 1                  1    9238   \n",
+       "1   1               1                17                  1    9238   \n",
+       "2   2               1                17                  2    9254   \n",
+       "3   3               1                 1                  3    9500   \n",
+       "4   4               1                 1                  2    9500   \n",
+       "\n",
+       "   Daytime/evening attendance  Previous qualification  \\\n",
+       "0                           1                       1   \n",
+       "1                           1                       1   \n",
+       "2                           1                       1   \n",
+       "3                           1                       1   \n",
+       "4                           1                       1   \n",
+       "\n",
+       "   Previous qualification (grade)  Nacionality  Mother's qualification  ...  \\\n",
+       "0                           126.0            1                       1  ...   \n",
+       "1                           125.0            1                      19  ...   \n",
+       "2                           137.0            1                       3  ...   \n",
+       "3                           131.0            1                      19  ...   \n",
+       "4                           132.0            1                      19  ...   \n",
+       "\n",
+       "   Curricular units 1st sem (without evaluations)  \\\n",
+       "0                                               0   \n",
+       "1                                               0   \n",
+       "2                                               0   \n",
+       "3                                               0   \n",
+       "4                                               0   \n",
+       "\n",
+       "   Curricular units 2nd sem (credited)  Curricular units 2nd sem (enrolled)  \\\n",
+       "0                                    0                                    6   \n",
+       "1                                    0                                    6   \n",
+       "2                                    0                                    6   \n",
+       "3                                    0                                    8   \n",
+       "4                                    0                                    7   \n",
+       "\n",
+       "   Curricular units 2nd sem (evaluations)  \\\n",
+       "0                                       7   \n",
+       "1                                       9   \n",
+       "2                                       0   \n",
+       "3                                      11   \n",
+       "4                                      12   \n",
+       "\n",
+       "   Curricular units 2nd sem (approved)  Curricular units 2nd sem (grade)  \\\n",
+       "0                                    6                         12.428571   \n",
+       "1                                    0                          0.000000   \n",
+       "2                                    0                          0.000000   \n",
+       "3                                    7                         12.820000   \n",
+       "4                                    6                         12.933333   \n",
+       "\n",
+       "   Curricular units 2nd sem (without evaluations)  Unemployment rate  \\\n",
+       "0                                               0               11.1   \n",
+       "1                                               0               11.1   \n",
+       "2                                               0               16.2   \n",
+       "3                                               0               11.1   \n",
+       "4                                               0                7.6   \n",
+       "\n",
+       "   Inflation rate   GDP  \n",
+       "0             0.6  2.02  \n",
+       "1             0.6  2.02  \n",
+       "2             0.3 -0.92  \n",
+       "3             0.6  2.02  \n",
+       "4             2.6  0.32  \n",
+       "\n",
+       "[5 rows x 37 columns]"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X_train.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "54c2caac",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:31.290903Z",
+     "iopub.status.busy": "2024-07-19T07:45:31.289882Z",
+     "iopub.status.idle": "2024-07-19T07:45:32.988624Z",
+     "shell.execute_reply": "2024-07-19T07:45:32.987505Z"
+    },
+    "papermill": {
+     "duration": 1.70961,
+     "end_time": "2024-07-19T07:45:32.991550",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:31.281940",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.preprocessing import StandardScaler, OneHotEncoder\n",
+    "from sklearn.pipeline import Pipeline\n",
+    "from sklearn.linear_model import LogisticRegression\n",
+    "from sklearn.compose import ColumnTransformer\n",
+    "from sklearn.model_selection import cross_val_score"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "06ae06cc",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:33.007067Z",
+     "iopub.status.busy": "2024-07-19T07:45:33.006043Z",
+     "iopub.status.idle": "2024-07-19T07:45:33.012577Z",
+     "shell.execute_reply": "2024-07-19T07:45:33.011426Z"
+    },
+    "papermill": {
+     "duration": 0.017074,
+     "end_time": "2024-07-19T07:45:33.015207",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:32.998133",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "logistic_regression = LogisticRegression(multi_class='multinomial',\n",
+    "                                        solver='saga',\n",
+    "                                        penalty='l1',\n",
+    "                                        max_iter=5000, verbose=False, n_jobs=-1)\n",
+    "preprocess_pipeline = Pipeline(steps=[\n",
+    "    ('standardize', StandardScaler())\n",
+    "], verbose=False)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "62d642c2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:33.029686Z",
+     "iopub.status.busy": "2024-07-19T07:45:33.029270Z",
+     "iopub.status.idle": "2024-07-19T07:45:33.104236Z",
+     "shell.execute_reply": "2024-07-19T07:45:33.102899Z"
+    },
+    "papermill": {
+     "duration": 0.085624,
+     "end_time": "2024-07-19T07:45:33.107111",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:33.021487",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "preprocess_pipeline.fit(X_train)\n",
+    "X_train = preprocess_pipeline.transform(X_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "b8cd090d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:45:33.121968Z",
+     "iopub.status.busy": "2024-07-19T07:45:33.121509Z",
+     "iopub.status.idle": "2024-07-19T07:48:21.712720Z",
+     "shell.execute_reply": "2024-07-19T07:48:21.711407Z"
+    },
+    "papermill": {
+     "duration": 168.608477,
+     "end_time": "2024-07-19T07:48:21.722180",
+     "exception": false,
+     "start_time": "2024-07-19T07:45:33.113703",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<style>#sk-container-id-1 {color: black;background-color: white;}#sk-container-id-1 pre{padding: 0;}#sk-container-id-1 div.sk-toggleable {background-color: white;}#sk-container-id-1 label.sk-toggleable__label {cursor: pointer;display: block;width: 100%;margin-bottom: 0;padding: 0.3em;box-sizing: border-box;text-align: center;}#sk-container-id-1 label.sk-toggleable__label-arrow:before {content: \"▸\";float: left;margin-right: 0.25em;color: #696969;}#sk-container-id-1 label.sk-toggleable__label-arrow:hover:before {color: black;}#sk-container-id-1 div.sk-estimator:hover label.sk-toggleable__label-arrow:before {color: black;}#sk-container-id-1 div.sk-toggleable__content {max-height: 0;max-width: 0;overflow: hidden;text-align: left;background-color: #f0f8ff;}#sk-container-id-1 div.sk-toggleable__content pre {margin: 0.2em;color: black;border-radius: 0.25em;background-color: #f0f8ff;}#sk-container-id-1 input.sk-toggleable__control:checked~div.sk-toggleable__content {max-height: 200px;max-width: 100%;overflow: auto;}#sk-container-id-1 input.sk-toggleable__control:checked~label.sk-toggleable__label-arrow:before {content: \"▾\";}#sk-container-id-1 div.sk-estimator input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-label input.sk-toggleable__control:checked~label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 input.sk-hidden--visually {border: 0;clip: rect(1px 1px 1px 1px);clip: rect(1px, 1px, 1px, 1px);height: 1px;margin: -1px;overflow: hidden;padding: 0;position: absolute;width: 1px;}#sk-container-id-1 div.sk-estimator {font-family: monospace;background-color: #f0f8ff;border: 1px dotted black;border-radius: 0.25em;box-sizing: border-box;margin-bottom: 0.5em;}#sk-container-id-1 div.sk-estimator:hover {background-color: #d4ebff;}#sk-container-id-1 div.sk-parallel-item::after {content: \"\";width: 100%;border-bottom: 1px solid gray;flex-grow: 1;}#sk-container-id-1 div.sk-label:hover label.sk-toggleable__label {background-color: #d4ebff;}#sk-container-id-1 div.sk-serial::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: 0;}#sk-container-id-1 div.sk-serial {display: flex;flex-direction: column;align-items: center;background-color: white;padding-right: 0.2em;padding-left: 0.2em;position: relative;}#sk-container-id-1 div.sk-item {position: relative;z-index: 1;}#sk-container-id-1 div.sk-parallel {display: flex;align-items: stretch;justify-content: center;background-color: white;position: relative;}#sk-container-id-1 div.sk-item::before, #sk-container-id-1 div.sk-parallel-item::before {content: \"\";position: absolute;border-left: 1px solid gray;box-sizing: border-box;top: 0;bottom: 0;left: 50%;z-index: -1;}#sk-container-id-1 div.sk-parallel-item {display: flex;flex-direction: column;z-index: 1;position: relative;background-color: white;}#sk-container-id-1 div.sk-parallel-item:first-child::after {align-self: flex-end;width: 50%;}#sk-container-id-1 div.sk-parallel-item:last-child::after {align-self: flex-start;width: 50%;}#sk-container-id-1 div.sk-parallel-item:only-child::after {width: 0;}#sk-container-id-1 div.sk-dashed-wrapped {border: 1px dashed gray;margin: 0 0.4em 0.5em 0.4em;box-sizing: border-box;padding-bottom: 0.4em;background-color: white;}#sk-container-id-1 div.sk-label label {font-family: monospace;font-weight: bold;display: inline-block;line-height: 1.2em;}#sk-container-id-1 div.sk-label-container {text-align: center;}#sk-container-id-1 div.sk-container {/* jupyter's `normalize.less` sets `[hidden] { display: none; }` but bootstrap.min.css set `[hidden] { display: none !important; }` so we also need the `!important` here to be able to override the default hidden behavior on the sphinx rendered scikit-learn.org. See: https://github.com/scikit-learn/scikit-learn/issues/21755 */display: inline-block !important;position: relative;}#sk-container-id-1 div.sk-text-repr-fallback {display: none;}</style><div id=\"sk-container-id-1\" class=\"sk-top-container\"><div class=\"sk-text-repr-fallback\"><pre>LogisticRegression(max_iter=5000, multi_class=&#x27;multinomial&#x27;, n_jobs=-1,\n",
+       "                   penalty=&#x27;l1&#x27;, solver=&#x27;saga&#x27;, verbose=False)</pre><b>In a Jupyter environment, please rerun this cell to show the HTML representation or trust the notebook. <br />On GitHub, the HTML representation is unable to render, please try loading this page with nbviewer.org.</b></div><div class=\"sk-container\" hidden><div class=\"sk-item\"><div class=\"sk-estimator sk-toggleable\"><input class=\"sk-toggleable__control sk-hidden--visually\" id=\"sk-estimator-id-1\" type=\"checkbox\" checked><label for=\"sk-estimator-id-1\" class=\"sk-toggleable__label sk-toggleable__label-arrow\">LogisticRegression</label><div class=\"sk-toggleable__content\"><pre>LogisticRegression(max_iter=5000, multi_class=&#x27;multinomial&#x27;, n_jobs=-1,\n",
+       "                   penalty=&#x27;l1&#x27;, solver=&#x27;saga&#x27;, verbose=False)</pre></div></div></div></div></div>"
+      ],
+      "text/plain": [
+       "LogisticRegression(max_iter=5000, multi_class='multinomial', n_jobs=-1,\n",
+       "                   penalty='l1', solver='saga', verbose=False)"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "logistic_regression.fit(X_train, y_train)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "a9e9ae4f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:48:21.737247Z",
+     "iopub.status.busy": "2024-07-19T07:48:21.736792Z",
+     "iopub.status.idle": "2024-07-19T07:54:02.994424Z",
+     "shell.execute_reply": "2024-07-19T07:54:02.992805Z"
+    },
+    "papermill": {
+     "duration": 341.281948,
+     "end_time": "2024-07-19T07:54:03.010702",
+     "exception": false,
+     "start_time": "2024-07-19T07:48:21.728754",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "0.817 0.002\n"
+     ]
+    }
+   ],
+   "source": [
+    "scores = cross_val_score(logistic_regression, X_train, y_train, cv=5, n_jobs=-1, scoring='accuracy')\n",
+    "print(scores.mean().round(3), scores.std().round(3))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "98d0a95d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:54:03.028554Z",
+     "iopub.status.busy": "2024-07-19T07:54:03.027682Z",
+     "iopub.status.idle": "2024-07-19T07:54:03.077834Z",
+     "shell.execute_reply": "2024-07-19T07:54:03.076262Z"
+    },
+    "papermill": {
+     "duration": 0.064127,
+     "end_time": "2024-07-19T07:54:03.082426",
+     "exception": false,
+     "start_time": "2024-07-19T07:54:03.018299",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "y_pred = logistic_regression.predict(preprocess_pipeline.transform(test))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "f5456cbc",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:54:03.132014Z",
+     "iopub.status.busy": "2024-07-19T07:54:03.131494Z",
+     "iopub.status.idle": "2024-07-19T07:54:03.139583Z",
+     "shell.execute_reply": "2024-07-19T07:54:03.138476Z"
+    },
+    "papermill": {
+     "duration": 0.041595,
+     "end_time": "2024-07-19T07:54:03.143354",
+     "exception": false,
+     "start_time": "2024-07-19T07:54:03.101759",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "test['pred_target']=y_pred"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "f0502583",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2024-07-19T07:54:03.190902Z",
+     "iopub.status.busy": "2024-07-19T07:54:03.190529Z",
+     "iopub.status.idle": "2024-07-19T07:54:03.288974Z",
+     "shell.execute_reply": "2024-07-19T07:54:03.287613Z"
+    },
+    "papermill": {
+     "duration": 0.119048,
+     "end_time": "2024-07-19T07:54:03.292277",
+     "exception": false,
+     "start_time": "2024-07-19T07:54:03.173229",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "test[['id','pred_target']].to_csv('prediction.csv', index=False)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "none",
+   "dataSources": [
+    {
+     "databundleVersionId": 8710574,
+     "sourceId": 73290,
+     "sourceType": "competition"
+    }
+   ],
+   "dockerImageVersionId": 30746,
+   "isGpuEnabled": false,
+   "isInternetEnabled": false,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.10.13"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 519.738996,
+   "end_time": "2024-07-19T07:54:05.922589",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2024-07-19T07:45:26.183593",
+   "version": "2.5.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
