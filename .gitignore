@@ -36,6 +36,7 @@ pkgs/
 # Config files from JupyterLab
 .lab/
 .jupyter/
+.virtual_documents/
 
 # Temporary files
 *.tmp
