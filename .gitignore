@@ -1,0 +1,48 @@
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Jupyter Notebook metadata
+*.nbconvert.ipynb
+*.nbconvert.py
+
+# Python bytecode and cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# Environment variables file (common in Kaggle)
+*.env
+
+# Hidden Kaggle files (e.g., `.kaggle/`)
+.kaggle/
+
+# Conda environment directory
+
+env/
+.conda/
+*.condarc
+*.conda
+
+# Conda package caches
+pkgs/
+
+# Output and intermediate files
+*.log
+*.pkl
+*.h5
+*.csv
+*.db
+
+# Config files from JupyterLab
+.lab/
+.jupyter/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Linux-specific files
+*~
+*.swp
+*.swo
