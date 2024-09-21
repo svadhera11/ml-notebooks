@@ -61,6 +61,6 @@ Additional notebooks explore techniques like KMeans clustering, decision trees, 
 
 ## Future Work
 
-The files in the `kaggle/` folder are currently under development, with plans for improving their organization (adding comments, markdown notes, and details about algorithms and reasoning why) and performance (hyperparameter choice, regularization, etc.) . Upcoming work will focus on finalizing code structure and enhancing readability.
+The files in the kaggle/ folder are currently under development, with plans to improve their organization (by adding comments, markdown notes, and details about algorithms and the reasoning behind them) and performance (via better hyperparameter choices, adding regularization, etc.). Upcoming work will focus on finalizing the code structure and enhancing readability.
 
 Stay tuned for further updates!
