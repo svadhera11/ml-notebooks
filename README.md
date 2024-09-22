@@ -47,6 +47,14 @@ The `implementations/` folder contains several machine learning models and neura
 - **`simple_rnn_text_generation.py`**:
   This script implements a simple Recurrent Neural Network (RNN) for text generation, showcasing how to train an RNN to generate sequences of text based on a given corpus (Tiny Shakespeare, saved as data/tiny_s.txt).
 
+- **`simple_lstm_text_generation.py`**
+  This script is similar to `simple_rnn_text_generation.py ` but instead of a RNN, a Long Short Term Memory (LSTM) cell with peephole connections is used.
+
+- **`simple_gru_text_generation.py`**
+  This script is similar to the first two, but instead of a RNN or LSTM, a Gated Recurrent Unit (GRU) is implemented. The update and reset gates, as well as the candidate hidden state (`h_new`), are all modified by the application of a LayerNorm before the nonlinearity. This helps it generate much better text than the simple LSTM and RNN models above.
+
+The text generated ($1000$ characters) by each of these models is saved alongside as a `.txt` file. Plots of the training and validation loss at fixed intervals have also been provided as `.png` files. 
+
 ## Kaggle Projects
 
 The `kaggle/` directory contains a series of notebooks focused on solving problems from various Kaggle competitions or datasets. Please note that many of these are **works-in-progress** and lack final structure or refinement.
